@@ -26,7 +26,7 @@
 
 /**
  *  Macro for building MAX7219 frames. The frame format is:
- *  |DON'T CARE BITS (B12:B15) | ADDR (B8:B11) | DATA (B0:B7)|
+ *  | DON'T CARE BITS (B12:B15) | ADDR (B8:B11) | DATA (B0:B7) |
  */
 #define MAX7219_FRAME(ADDR, DATA)    ((uint16_t) (((ADDR) << 8) | (DATA)))
 
@@ -40,7 +40,7 @@
 typedef struct {
     LPC_SSP_T *ssp;         /**< The base of SSP used */
     __IO uint8_t *ssel;     /**< The base of GPIO pin used */
-    size_t numOfDisplays;   /**< The number of chained MAX7219s used (number of displays) */
+    size_t numOfDisplays;   /**< The number of chained MAX7219s (number of displays) */
 } MAX7219_Config;
 
 /**

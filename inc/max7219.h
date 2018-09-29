@@ -22,18 +22,18 @@
 #define MAX7219_SHOUTDOWN_REG       0x0C            /**< Shutdown register used for turning on/off the display */
 #define MAX7219_DISPLAY_TEST_REG    0x0F            /**< Display Test register used for turning on/off test mode (all LEDs) */
 #define MAX7219_DIGIT_REG(DIGIT)    ((DIGIT) + 1)   /**< Calculate proper digit register from 0 offset.
-                                                     The Digit registers starts from 0x01 (1st digit) to 0x08 (8th digit) */
+                                                         The Digit registers starts from 0x01 (1st digit) to 0x08 (8th digit) */
 
 /**
  *  Macro for building MAX7219 frames. The frame format is:
- *  | DON'T CARE BITS (B12:B15) | ADDR (B8:B11) | DATA (B0:B7) |
+ *  |DON'T CARE BITS (B12:B15)|ADDR (B8:B11)|DATA (B0:B7)|
  */
 #define MAX7219_FRAME(ADDR, DATA)    ((uint16_t) (((ADDR) << 8) | (DATA)))
 
 /**
  * @brief MAX7219 configuration structure
  * @note
- * SSP have to be configured as SPI master with 16 bit frame and CPOL, CPHA bits set to zero.
+ * SSP have to be configured as SPI master with 16 bit frame and clock mode 0
  * The clock rate should not exceed 10MHz
  * @note SSEL pin have to be configured as a GPIO output pin. See GPIO byte pin registers for passing base address
  */

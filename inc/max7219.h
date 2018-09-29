@@ -44,6 +44,28 @@ typedef struct {
 } MAX7219_Config;
 
 /**
+ * @brief Set all necessary settings and configure MAX7219s' blocks
+ * @param config : An MAX7219_Config entity
+ * @return Nothing
+ */
+void MAX7219_SetConfiguration(MAX7219_Config config);
+
+/**
+ * @brief Update the registry value of the desired display
+ * @param offset : Display offset starting from 0
+ * @param frame  : A requested frame
+ * @return Nothing
+ */
+void MAX7219_UpdateDisplayReg(size_t offset, uint16_t frame);
+
+/**
+ * @brief Update the registry value of all displays
+ * @param frame : A requested frame
+ * @return Nothing
+ */
+void MAX7219_UpdateDisplaysReg(uint16_t frame);
+
+/**
  * @}
  */
 

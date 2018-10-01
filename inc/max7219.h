@@ -42,8 +42,14 @@
 typedef struct {
     LPC_SSP_T *ssp;         /**< The base of SSP used */
     __IO uint8_t *ssel;     /**< The base of GPIO pin used */
-    size_t numOfDisplays;   /**< The number of chained MAX7219s (number of displays) */
+    size_t numOfDisplays;   /**< The number of chained MAX7219s (number of displays). */
 } MAX7219_Config;
+
+typedef enum {
+    OP_SUCCESS = 0,     /**< Operation performed successfully */
+    BUFFER_ERROR = 1,   /**< Buffer allocation error */
+    OFFSET_ERROR = 2,   /**< Given display/data offset exceeds correct range */
+} MAX7219_ReturnCodes;
 
 /**
  * @brief Helper function for calculating intensity frame
@@ -74,19 +80,25 @@ static inline uint16_t MAX7219_TestFrame(bool mode) {
 }
 
 /**
- * @brief Set all necessary settings and configure MAX7219s' blocks
- * @param config : An MAX7219_Config entity
- * @return Nothing
+ * @brief Set all necessary settings, configure MAX7219s' blocks and allocate buffer data
+ * @param config : An MAX7219_Config entity.
+ * @return The function can return:
+ *           - BUFFER_ERROR when data buffer cannot be allocated
+ *           - OP_SUCCESS when everything is set correctly
+ * @note Only positive values for MAX7219_Config.numOfDisplays are allowed. Passing 0 will cause change the variable value to 1
+ * @note Always check the return code. Behavior of library functions is undefined if this function does not return OP_SUCCESS code
  */
-void MAX7219_SetConfiguration(MAX7219_Config config);
+MAX7219_ReturnCodes MAX7219_SetConfiguration(MAX7219_Config config);
 
 /**
  * @brief Update the registry value of the desired display
  * @param offset : Display offset starting from 0
  * @param frame  : Requested frame
- * @return Nothing
+ * @return The function can return:
+ *           - OFFSET_ERROR when given offset exceeds total numbers of displays
+ *           - OP_SUCCESS otherwise
  */
-void MAX7219_UpdateDisplayReg(size_t offset, uint16_t frame);
+MAX7219_ReturnCodes MAX7219_UpdateDisplayReg(size_t offset, uint16_t frame);
 
 /**
  * @brief Update the registry value of all displays

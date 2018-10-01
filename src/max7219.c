@@ -6,12 +6,16 @@
  */
 
 #include "max7219.h"
+#include "stdlib.h"
 
 /*****************************************************************************
  * Private types/enumerations/variables
  ****************************************************************************/
 
-static MAX7219_Config conf;
+static MAX7219_Config conf;     /**< Stores all necessary configuration parameters */
+static bool readyState = false; /**< Stores true if all necessary blocks are configured properly, false otherwise */
+static uint64_t *buffer = NULL; /**< Buffer for storing displays data */
+
 
 /*****************************************************************************
  * Public types/enumerations/variables
@@ -50,21 +54,31 @@ static void sendSPIFrame(uint16_t frame) {
  * Public functions
  ****************************************************************************/
 
-void MAX7219_SetConfiguration(MAX7219_Config config) {
+MAX7219_ReturnCodes MAX7219_SetConfiguration(MAX7219_Config config) {
     conf = config;
-    if (conf.numOfDisplays == 0) { /* Change the number of displays to one if zero is passed */
-        conf.numOfDisplays = 1;
+    if (conf.numOfDisplays == 0) {
+        conf.numOfDisplays = 1; /* Change the number of displays to one if zero is passed */
     }
+
+    buffer = (uint64_t *) malloc(sizeof(uint64_t) * conf.numOfDisplays);
+    if (buffer == NULL) {
+        return BUFFER_ERROR; /* Memory cannot be allocated. Return error code */
+    }
+
     *(conf.ssel) = HIGH; /* The SSEL pin have to be high when inactive */
     MAX7219_UpdateDisplaysReg(MAX7219_FRAME(MAX7219_DECODE_MODE_REG, 0x00)); /* Disable Code B */
     MAX7219_UpdateDisplaysReg(MAX7219_FRAME(MAX7219_SCAN_LIMIT_REG, 0x07)); /* Set scan limit to 8 digits */
     MAX7219_UpdateDisplaysReg(MAX7219_FRAME(MAX7219_DISPLAY_TEST_REG, 0x00)); /* Disable test mode */
+
+    readyState = true;
+    return OP_SUCCESS;
 }
 
-void MAX7219_UpdateDisplayReg(size_t offset, uint16_t frame) {
+MAX7219_ReturnCodes MAX7219_UpdateDisplayReg(size_t offset, uint16_t frame) {
     if (offset > conf.numOfDisplays - 1) { /* If the display offset is greater than the total amount of displays do nothing */
-        return;
+        return OFFSET_ERROR;
     }
+
     BSYWait(); /* Make sure that SSP controller is idle and drive pin state low */
     *(conf.ssel) = LOW;
     for (size_t i = 1; i <= conf.numOfDisplays; i++) { /* Send frames in reverse order. The first frame will arrive to the last MAX7219 chip */
@@ -77,6 +91,8 @@ void MAX7219_UpdateDisplayReg(size_t offset, uint16_t frame) {
     }
     BSYWait(); /* Wait until the SSP controller is idle to prevent latching data when TX FIFO is not empty and drive pin state high */
     *(conf.ssel) = HIGH;
+
+    return OP_SUCCESS;
 }
 
 void MAX7219_UpdateDisplaysReg(uint16_t frame) {

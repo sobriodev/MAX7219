@@ -45,6 +45,9 @@ typedef struct {
     size_t numOfDisplays;   /**< The number of chained MAX7219s (number of displays). */
 } MAX7219_Config;
 
+/**
+ * @brief Return codes for library functions
+ */
 typedef enum {
     OP_SUCCESS = 0,     /**< Operation performed successfully */
     BUFFER_ERROR = 1,   /**< Buffer allocation error */

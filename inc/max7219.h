@@ -32,6 +32,13 @@
 #define LOW     0   /**<  Low state of a pin indicates presence of data */
 #define HIGH    1   /**<  High state of a pin latches data in all MAX7219 chips */
 
+#define MAX_DISP_OFFSET(DISP)       ((DISP) - 1)        /**< Calculate maximum display offset */
+#define MAX_COL_OFFSET(COL)         ((COL) * 8 - 1)     /**< Calculate maximum column offset */
+#define NEW_COL_OFFSET(COL, LEN)    ((COL) + (LEN) - 1) /**< Calculate new column offset based on current column and length of the data */
+
+#define REAL_DISP(COL)  ((COL) / 8) /**< Calculate output display based on column offset */
+#define REAL_COL(COL)   ((COL) % 8) /**< Calculate real column based on column offset */
+
 /**
  * @brief MAX7219 configuration structure
  * @note
@@ -95,13 +102,13 @@ MAX7219_ReturnCodes MAX7219_SetConfiguration(MAX7219_Config config);
 
 /**
  * @brief Update the registry value of the desired display
- * @param offset : Display offset starting from 0
- * @param frame  : Requested frame
+ * @param dispOffset : Display offset starting from 0
+ * @param frame      : Requested frame
  * @return The function can return:
  *           - OFFSET_ERROR when given offset exceeds total numbers of displays
  *           - OP_SUCCESS otherwise
  */
-MAX7219_ReturnCodes MAX7219_UpdateDisplayReg(size_t offset, uint16_t frame);
+MAX7219_ReturnCodes MAX7219_UpdateDisplayReg(size_t dispOffset, uint16_t frame);
 
 /**
  * @brief Update the registry value of all displays
@@ -109,6 +116,20 @@ MAX7219_ReturnCodes MAX7219_UpdateDisplayReg(size_t offset, uint16_t frame);
  * @return Nothing
  */
 void MAX7219_UpdateDisplaysReg(uint16_t frame);
+
+MAX7219_ReturnCodes MAX7219_UpdateBuffer(size_t colOffset, const uint8_t *data, size_t bytes, bool opCode);
+
+static inline MAX7219_ReturnCodes MAX7219_UpdateBufferPtr(size_t colOffset, const uint8_t *data, size_t bytes) {
+    return MAX7219_UpdateBuffer(colOffset, data, bytes, false);
+}
+
+static inline MAX7219_ReturnCodes MAX7219_UpdateBufferVal(size_t colOffset, uint8_t value, size_t bytes) {
+    return MAX7219_UpdateBuffer(colOffset, &value, bytes, true);
+}
+
+void MAX7219_RefreshDisp(void);
+
+void MAX7219_UnsetConfiguration(void);
 
 /**
  * @}

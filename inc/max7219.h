@@ -75,7 +75,7 @@ typedef enum {
  * [ DON'T CARE BITS (B12:B15) | ADDR (B8:B11) | DATA (B0:B7) ]
  */
 static inline uint16_t MAX7219_Frame(uint8_t addr, uint8_t data) {
-    return ((uint16_t) (((addr) << 8) | ((data) & 0xFF)));
+    return (uint16_t) addr << 8 | data;
 }
 
 /**

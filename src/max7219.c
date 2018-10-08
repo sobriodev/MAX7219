@@ -136,7 +136,9 @@ void MAX7219_RefreshDisp(void) {
 }
 
 void MAX7219_UnsetConf(void) {
-    free(buffer);
-    buffer = NULL;
+    if (buffer) {
+        free(buffer);
+        buffer = NULL;
+    }
 }
 

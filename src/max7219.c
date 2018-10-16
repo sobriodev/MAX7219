@@ -121,18 +121,26 @@ MAX7219_ReturnCodes MAX7219_UpdateBuffer(uint16_t colOffset, const uint8_t *data
     return OP_SUCCESS;
 }
 
-void MAX7219_RefreshDisp(void) {
-    for (int8_t i = 0; i < COLS_PER_DISP; i++) {
-        SSP_BSYWait(); /* Make sure that the SSP controller is idle and drive pin state low */
-        *(conf.ssel) = LOW;
-
-        for (uint8_t j = 1; j <= conf.numOfDisp; j++) {
-            SSP_SendFrame(MAX7219_Frame(MAX7219_DIG_REG(i), buffer[COL_OFFSET(conf.numOfDisp - j, i)]));
-        }
-
-        SSP_BSYWait(); /* Wait until the SSP controller is idle to prevent latching data when TX FIFO is not empty and drive pin state high */
-        *(conf.ssel) = HIGH;
+MAX7219_ReturnCodes MAX7219_RefreshDisp(uint16_t colOffset, uint16_t bytes) {
+    /* Basic validation. Cast the offset to a 32 bit value to prevent overflow while calculating end column offset */
+    if (bytes == 0 || END_COL_OFFSET((uint32_t) colOffset, bytes) > MAX_COL_OFFSET(conf.numOfDisp)) {
+        return OFFSET_ERROR;
     }
+
+    for (uint16_t col = colOffset; col <= END_COL_OFFSET(colOffset, bytes); col++) {
+        /* Due to the fact that MAX7219 chip arranges the columns horizontally we have to change columns into rows */
+        uint8_t resCol = 0;
+        for (uint8_t i = 0; i < DISP_SIZE; i++) {
+            uint8_t buffVal = buffer[COL_DISP(col) * 8 + i]; /* Get buffer value at particular column offset */
+            buffVal >>= 7 - REL_COL(col); /* Shift requested LED bit to the LSB */
+            buffVal &= 0x1; /* Only LSB matters */
+            buffVal <<= i; /* Shift LED bit to the desired offset */
+            resCol |= buffVal;
+        }
+        MAX7219_UpdateDisplayReg(COL_DISP(col), MAX7219_Frame(MAX7219_DIG_REG(REL_COL(col)), resCol));
+    }
+
+    return OP_SUCCESS;
 }
 
 void MAX7219_UnsetConf(void) {

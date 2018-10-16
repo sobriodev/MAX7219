@@ -25,7 +25,7 @@
 /**< Calculate proper digit register from 0 offset. The Digit registers start from 0x01 (1st digit) and end at 0x08 (8th digit) */
 #define MAX7219_DIG_REG(DIG)    ((DIG) + 1)
 
-#define COLS_PER_DISP 8 //!< The number of columns per display
+#define DISP_SIZE 8 //!< The number of columns and rows per display
 
 #define LOW     0   //!<  Low state of a pin indicates presence of data
 #define HIGH    1   //!<  High state of a pin latches data in all MAX7219 chips
@@ -33,7 +33,8 @@
 #define MAX_DISP_OFFSET(DISP)       ((DISP) - 1)            //!< Calculate maximum display offset
 #define MAX_COL_OFFSET(COL)         ((COL) * 8 - 1)         //!< Calculate maximum column offset
 #define END_COL_OFFSET(COL, LEN)    ((COL) + (LEN) - 1)     //!< Calculate end column offset based on current column and length of the data
-#define COL_OFFSET(DISP, COL)       ((DISP) * 8 + (COL))    //!< Calculate absolute column offset based on a specified display column
+#define COL_DISP(COL)               ((COL) / 8)             //!< Calculate display offset based on the column offset
+#define REL_COL(COL)                ((COL) % 8)             //!< Calculate relative display column offset
 
 /**
  * @brief MAX7219 configuration structure
@@ -177,12 +178,8 @@ static inline MAX7219_ReturnCodes MAX7219_UpdateBufferVal(uint16_t colOffset, ui
     return MAX7219_UpdateBuffer(colOffset, &value, bytes, VAL_UPDATE);
 }
 
-/**
- * @brief Send data from the buffer to the displays
- * @todo Modify the function to refresh only specified columns
- * @return Nothing
- */
-void MAX7219_RefreshDisp(void);
+
+MAX7219_ReturnCodes MAX7219_RefreshDisp(uint16_t colOffset, uint16_t bytes);
 
 /**
  * @brief Unset configuration and free allocated memory
